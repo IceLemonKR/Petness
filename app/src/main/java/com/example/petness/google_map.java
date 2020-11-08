@@ -1,126 +1,87 @@
 package com.example.petness;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
-import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
-import android.view.MenuItem;
-import android.view.View;
+import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderApi;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
+import android.Manifest;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.widget.Toast;
+
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.ArrayList;
 
-public class google_map extends AppCompatActivity implements OnMapReadyCallback
-        , NavigationView.OnNavigationItemSelectedListener
-        , GoogleApiClient.ConnectionCallbacks
-        , GoogleApiClient.OnConnectionFailedListener
-        , ActivityCompat.OnRequestPermissionsResultCallback
-        , LocationListener {
+public class google_map extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap googleMap;
-    private Geocoder coder;
-    private GoogleApiClient mGoogleApiClient;
-    private PolylineOptions polylineOptions;
-    private ArrayList<LatLng> arrayPoints;
-
-
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-
-    private GoogleMap mMap;
-    private LocationRequest mLocationRequest;
-    private Location mCurrentLocation;
-    private FusedLocationProviderApi mFusedLocationProviderApi;
-    private boolean mPermissionDenied;
-    private LocationManager locationManager;
-    private Marker mCurrentMarker;
-    private LatLng startLatLng = new LatLng(0, 0);        //polyline 시작점
-    private LatLng endLatLng = new LatLng(0, 0);        //polyline 끝점
-    private boolean walkState = false;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.google_map);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.googlemap);
-        setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.googlemap);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                changeWalkState();        //걸음 상태 변경
-            }
-        });
-
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.google_map);
         mapFragment.getMapAsync(this);
-
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(LocationServices.API)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build();
-        }
-        createLocationRequest();
-
-    }
-
-    private void changeWalkState() {
-    }
-
-    private void createLocationRequest() {
-    }
-
-    @Override
-    public void onLocationChanged(@NonNull Location location) {
-
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        this.googleMap = googleMap;
+        LatLng latLng = new LatLng(37.557667, 126.926546);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        googleMap.moveCamera(CameraUpdateFactory.zoomTo(15));
+        MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("홍대입구역");
+        googleMap.addMarker(markerOptions);
 
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            googleMap.setMyLocationEnabled(true);
+        }
+        else{
+            checkLocationPermissionWithRationale();
+        }
+    }
+
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+
+    private void checkLocationPermissionWithRationale() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                new AlertDialog.Builder(this)
+                        .setTitle("위치정보")
+                        .setMessage("이 앱을 사용하기 위해서는 위치정보에 접근이 필요합니다. 위치정보 접근을 허용하여 주세요.")
+                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                ActivityCompat.requestPermissions(google_map.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_LOCATION);
+                            }
+                        }).create().show();
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_LOCATION);
+            }
+        }
     }
 
     @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        return false;
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        googleMap.setMyLocationEnabled(true);
+                    }
+                } else {
+                    Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+        }
     }
 }
