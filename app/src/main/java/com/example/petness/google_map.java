@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -61,22 +62,11 @@ import java.util.Map;
 public class google_map extends AppCompatActivity
         implements OnMapReadyCallback,
         ActivityCompat.OnRequestPermissionsResultCallback{
-/*
-    LocationManager mLocMan;
-    TextView mStatus;
-    TextView mResult;
-    String mProvider;
-    int mCount;
-*/
+
     public static final String DATABASE_NAME = "Petness.db";
     public static final String TABLE_NAME = "Location";
     public static final String Latitude = "latitude";
     public static final String longitude = "longitude";
-    final static int dbVersion = 2;
-
-    private static DataBaseHelper INSTANCE;
-    private static SQLiteDatabase mDatabase;
-
 
     private GoogleMap mMap;
     private Marker currentMarker = null;
@@ -97,6 +87,7 @@ public class google_map extends AppCompatActivity
 
     Location mCurrentLocatiion;
     LatLng currentPosition;
+    TextView result;
 
 
     private FusedLocationProviderClient mFusedLocationClient;
@@ -105,17 +96,13 @@ public class google_map extends AppCompatActivity
 
 
     private View mLayout;  // Snackbar 사용하기 위해서는 View가 필요합니다.
+    private SQLiteOpenHelper DatabaseHelper;
     // (참고로 Toast에서는 Context가 필요했습니다.)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-/*
-        mLocMan = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        mStatus = (TextView) findViewById(R.id.status);
-        mProvider = mLocMan.getBestProvider(new Criteria(), true);
-*/
-        INSTANCE = new DataBaseHelper(this, DATABASE_NAME, null, dbVersion);
+
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -133,8 +120,6 @@ public class google_map extends AppCompatActivity
                 new LocationSettingsRequest.Builder();
 
         builder.addLocationRequest(locationRequest);
-
-
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
 
@@ -143,6 +128,7 @@ public class google_map extends AppCompatActivity
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
     }
+
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
@@ -203,8 +189,6 @@ public class google_map extends AppCompatActivity
 
         }
 
-
-
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
         // 현재 오동작을 해서 주석처리
 
@@ -249,45 +233,6 @@ public class google_map extends AppCompatActivity
         }
     };
 
-    public void onCreate(SQLiteDatabase db){
-
-        db.execSQL("CREATE TABLE " + TABLE_NAME +
-                "(" +
-                "data DEFAULT (data('now', 'latitude')), " +
-                "data DEFAULT (data('now', 'longitude'))," +
-                "depressStatus int(1) " +
-                ")"
-        );
-    }
-
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-        this.onCreate(db);
-    }
-
-    public void mOnClick(View v){
-        SQLiteDatabase db;
-        String sql;
-        long now = System.currentTimeMillis();
-
-        switch (v.getId()){
-            case R.id.btn_save:
-                Intent intent = new Intent(
-                        getApplicationContext(),
-                        google_map.class
-                );
-                startActivity(intent);
-                Toast.makeText(getApplicationContext(),"저장되었습니다.",Toast.LENGTH_LONG).show();
-                break;
-            case R.id.insert:
-                db.
-
-                break;
-            case R.id.btn_delete:
-
-
-        }
-    }
     private void startLocationUpdates() {
 
         if (!checkLocationServicesStatus()) {
@@ -300,7 +245,6 @@ public class google_map extends AppCompatActivity
                     Manifest.permission.ACCESS_FINE_LOCATION);
             int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
                     Manifest.permission.ACCESS_COARSE_LOCATION);
-
 
 
             if (hasFineLocationPermission != PackageManager.PERMISSION_GRANTED ||
@@ -317,11 +261,8 @@ public class google_map extends AppCompatActivity
 
             if (checkPermission())
                 mMap.setMyLocationEnabled(true);
-
         }
-
     }
-
 
     @Override
     protected void onStart() {
@@ -336,13 +277,8 @@ public class google_map extends AppCompatActivity
 
             if (mMap!=null)
                 mMap.setMyLocationEnabled(true);
-
         }
-
-
     }
-
-
     @Override
     protected void onStop() {
 
@@ -366,7 +302,6 @@ public class google_map extends AppCompatActivity
         List<Address> addresses;
 
         try {
-
             addresses = geocoder.getFromLocation(
                     latlng.latitude,
                     latlng.longitude,
@@ -381,7 +316,6 @@ public class google_map extends AppCompatActivity
 
         }
 
-//ddd
         if (addresses == null || addresses.size() == 0) {
             Toast.makeText(this, "주소 미발견", Toast.LENGTH_LONG).show();
             return "주소 미발견";
@@ -464,11 +398,6 @@ public class google_map extends AppCompatActivity
 
     }
 
-
-
-    /*
-     * ActivityCompat.requestPermissions를 사용한 퍼미션 요청의 결과를 리턴받는 메소드입니다.
-     */
     @Override
     public void onRequestPermissionsResult(int permsRequestCode,
                                            @NonNull String[] permissions,
@@ -577,61 +506,5 @@ public class google_map extends AppCompatActivity
             }
         }
     }
+
 }
-/*
-    public void onResume() {
-        super.onResume();
-        mCount = 0;
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        mLocMan.requestLocationUpdates(mProvider, 3000, 10, mListener);
-        mStatus.setText("현재 상태 : 서비스 시작");
-    }
-
-    public void onPause(){
-        super.onPause();
-        mLocMan.removeUpdates(mListener);
-        mStatus.setText("현재 상태 : 서비스 종료");
-    }
-
-    LocationListener mListener = new LocationListener() {
-        @Override
-        public void onLocationChanged(@NonNull Location location) {
-            String sloc = String.format("수신회수:%d\n위도 : %f\n 경도 :  %f\n 고도 : %f\n",mCount,location.getLatitude(),location.getLongitude(),location.getAltitude());
-            mResult.setText(sloc);
-        }
-
-        public void onProviderDisabled(String provider){
-            mStatus.setText("현재 상태 : 서비스 사용 불가");
-        }
-
-        public void onProviderEnabled(String provider){
-            mStatus.setText("현재 상태 : 서비스 사용 가능");
-        }
-
-        public void onStatusChanged(String provider, int status, Bundle extras){
-            String sStatus = "";
-            switch (status){
-                case LocationProvider.OUT_OF_SERVICE:
-                    sStatus = "범위를 벗어남";
-                    break;
-                case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                    sStatus = "일시적 불능";
-                    break;
-                case LocationProvider.AVAILABLE:
-                    sStatus = "사용가능";
-                    break;
-            }
-            mStatus.setText(provider + "상태 변경 : " + mStatus);
-        }
-    };
-*/
-
