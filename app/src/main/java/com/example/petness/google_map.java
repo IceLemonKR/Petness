@@ -72,9 +72,11 @@ public class google_map extends AppCompatActivity
     public static final String TABLE_NAME = "Location";
     public static final String Latitude = "latitude";
     public static final String longitude = "longitude";
+    final static int dbVersion = 2;
 
     private static DataBaseHelper INSTANCE;
     private static SQLiteDatabase mDatabase;
+
 
     private GoogleMap mMap;
     private Marker currentMarker = null;
@@ -113,6 +115,7 @@ public class google_map extends AppCompatActivity
         mStatus = (TextView) findViewById(R.id.status);
         mProvider = mLocMan.getBestProvider(new Criteria(), true);
 */
+        INSTANCE = new DataBaseHelper(this, DATABASE_NAME, null, dbVersion);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -260,6 +263,30 @@ public class google_map extends AppCompatActivity
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         this.onCreate(db);
+    }
+
+    public void mOnClick(View v){
+        SQLiteDatabase db;
+        String sql;
+        long now = System.currentTimeMillis();
+
+        switch (v.getId()){
+            case R.id.btn_save:
+                Intent intent = new Intent(
+                        getApplicationContext(),
+                        google_map.class
+                );
+                startActivity(intent);
+                Toast.makeText(getApplicationContext(),"저장되었습니다.",Toast.LENGTH_LONG).show();
+                break;
+            case R.id.insert:
+                db.
+
+                break;
+            case R.id.btn_delete:
+
+
+        }
     }
     private void startLocationUpdates() {
 
