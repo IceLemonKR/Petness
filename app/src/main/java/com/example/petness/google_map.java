@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -20,6 +21,8 @@ import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.strictmode.SqliteObjectLeakedViolation;
+import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -42,11 +45,17 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.database.Exclude;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 
 public class google_map extends AppCompatActivity
@@ -59,6 +68,13 @@ public class google_map extends AppCompatActivity
     String mProvider;
     int mCount;
 */
+    public static final String DATABASE_NAME = "Petness.db";
+    public static final String TABLE_NAME = "Location";
+    public static final String Latitude = "latitude";
+    public static final String longitude = "longitude";
+
+    private static DataBaseHelper INSTANCE;
+    private static SQLiteDatabase mDatabase;
 
     private GoogleMap mMap;
     private Marker currentMarker = null;
@@ -67,7 +83,6 @@ public class google_map extends AppCompatActivity
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
     private static final int UPDATE_INTERVAL_MS = 1000;  // 1초
     private static final int FASTEST_UPDATE_INTERVAL_MS = 500; // 0.5초
-
 
     // onRequestPermissionsResult에서 수신된 결과에서 ActivityCompat.requestPermissions를 사용한 퍼미션 요청을 구별하기 위해 사용됩니다.
     private static final int PERMISSIONS_REQUEST_CODE = 100;
@@ -228,14 +243,24 @@ public class google_map extends AppCompatActivity
 
                 mCurrentLocatiion = location;
             }
-
-
         }
-
     };
 
+    public void onCreate(SQLiteDatabase db){
 
+        db.execSQL("CREATE TABLE " + TABLE_NAME +
+                "(" +
+                "data DEFAULT (data('now', 'latitude')), " +
+                "data DEFAULT (data('now', 'longitude'))," +
+                "depressStatus int(1) " +
+                ")"
+        );
+    }
 
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        this.onCreate(db);
+    }
     private void startLocationUpdates() {
 
         if (!checkLocationServicesStatus()) {
@@ -329,7 +354,7 @@ public class google_map extends AppCompatActivity
 
         }
 
-
+//ddd
         if (addresses == null || addresses.size() == 0) {
             Toast.makeText(this, "주소 미발견", Toast.LENGTH_LONG).show();
             return "주소 미발견";
@@ -525,6 +550,7 @@ public class google_map extends AppCompatActivity
             }
         }
     }
+}
 /*
     public void onResume() {
         super.onResume();
@@ -582,6 +608,3 @@ public class google_map extends AppCompatActivity
     };
 */
 
-
-
-}

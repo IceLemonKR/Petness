@@ -7,19 +7,11 @@
     android:orientation="vertical"
     android:id="@+id/layout_main"
     tools:context=".google_map">
-    <TextView
-        android:id="@+id/status"
-        android:layout_width="match_parent"
+    <Button
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:text="현재 상태 : "
-        />
-    <TextView
-        android:id="@+id/result"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:text="현재 위치 : 알수없음"
+        android:id="@+id/btn_move"
+        android:text="test"
         />
     <fragment
         android:id="@+id/google_map"
@@ -27,5 +19,4 @@
         android:layout_height="match_parent"
         android:name="com.google.android.gms.maps.SupportMapFragment"
     />
-
 </LinearLayout>
