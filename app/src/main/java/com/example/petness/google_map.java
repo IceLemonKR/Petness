@@ -20,6 +20,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.strictmode.SqliteObjectLeakedViolation;
@@ -230,11 +231,10 @@ public class google_map extends AppCompatActivity
 
                 mCurrentLocatiion = location;
 
-                Intent intent = new Intent(google_map.this, Firebase.class);
-                intent.putExtra("location",markerSnippet);
-                startActivity(intent);
-
             }
+
+
+
         }
     };
 
