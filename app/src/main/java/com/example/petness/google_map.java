@@ -229,6 +229,11 @@ public class google_map extends AppCompatActivity
                 setCurrentLocation(location, markerTitle, markerSnippet);
 
                 mCurrentLocatiion = location;
+
+                Intent intent = new Intent(google_map.this, Firebase.class);
+                intent.putExtra("location",markerSnippet);
+                startActivity(intent);
+
             }
         }
     };
