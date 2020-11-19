@@ -7,7 +7,6 @@
     android:orientation="vertical"
     android:id="@+id/layout_main"
     tools:context=".google_map">
-
     <fragment
         android:id="@+id/google_map"
         android:layout_width="match_parent"

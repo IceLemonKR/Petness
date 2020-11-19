@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 
 import com.google.firebase.database.DataSnapshot;
@@ -26,23 +27,31 @@ public class Firebase extends AppCompatActivity {
     // [START declare_database_ref]
     private DatabaseReference mDatabase;
     // [END declare_database_ref]
+    Intent myintent = getIntent();
+    String latitude = myintent.getExtras().getString("latitude");
+    String longitude = myintent.getExtras().getString("longitude");
 
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference myRef = database.getReference("Petness");
+    FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+    DatabaseReference rootRef= firebaseDatabase.getReference();
+    DatabaseReference dataRef = rootRef.child("location");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_firebase);
 
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference myRef = database.getReference("message");
 
-        myRef.addValueEventListener(new ValueEventListener() {
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        //final DatabaseReference myRef = database.getReference("message");
+
+        rootRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String location = dataSnapshot.getValue(String.class);
-                Log.d(TAG, "Value is : " + location);
+               Log.d(TAG, "Value is : " + location);
+               rootRef.child("latitude").setValue(latitude);
+               rootRef.child("longitude").setValue(longitude);
+               // myRef.setValue(TAG, location);
             }
 
             @Override

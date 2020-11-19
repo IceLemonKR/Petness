@@ -13,6 +13,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -128,6 +131,12 @@ public class google_map extends AppCompatActivity
                 .findFragmentById(R.id.google_map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
+
+        Intent myintents = new Intent(this, Firebase.class);
+        myintents.putExtra("latitude",Latitude);
+        myintents.putExtra("longitude", longitude);
+        startActivity(myintents);
+        finish();
     }
 
 
@@ -232,11 +241,23 @@ public class google_map extends AppCompatActivity
                 mCurrentLocatiion = location;
 
             }
-
-
-
         }
     };
+
+//    class MyView extends View {
+//
+//         Paint paint = new Paint();
+//         Path path = new Path();
+//        public MyView(Context context) {
+//            super(context);
+//            paint.setStyle(Paint.Style.STROKE);
+//            paint.setStrokeWidth(15f);
+//        }
+//        protected void onDraw(Canvas canvas){
+//            canvas.drawPath(path, paint);
+//        }
+//
+//    }
 
     private void startLocationUpdates() {
 
