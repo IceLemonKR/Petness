@@ -132,13 +132,7 @@ public class google_map extends AppCompatActivity
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
-        Intent myintents = new Intent(this, Firebase.class);
-        myintents.putExtra("latitude",Latitude);
-        myintents.putExtra("longitude", longitude);
-        startActivity(myintents);
-        finish();
     }
-
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
@@ -239,6 +233,7 @@ public class google_map extends AppCompatActivity
                 setCurrentLocation(location, markerTitle, markerSnippet);
 
                 mCurrentLocatiion = location;
+                
 
             }
         }
@@ -350,7 +345,6 @@ public class google_map extends AppCompatActivity
             Address address = addresses.get(0);
             return address.getAddressLine(0);
         }
-
     }
 
 
