@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.google.gms.google-services'
+
 
 buildscript {
     repositories {
@@ -66,3 +66,4 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging'
 
 }
+apply plugin: 'com.google.gms.google-services'

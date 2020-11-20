@@ -1,6 +1,7 @@
 package com.example.petness;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -31,6 +32,7 @@ import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,7 +55,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,8 +77,7 @@ public class google_map extends AppCompatActivity
     public static final String DATABASE_NAME = "Petness.db";
     public static final String TABLE_NAME = "Location";
     public static final String Latitude = "latitude";
-    public static final String longitude = "longitude";
-
+    public static final String Longitude = "longitude";
     private GoogleMap mMap;
     private Marker currentMarker = null;
 
@@ -102,6 +108,9 @@ public class google_map extends AppCompatActivity
     private View mLayout;  // Snackbar 사용하기 위해서는 View가 필요합니다.
     private SQLiteOpenHelper DatabaseHelper;
     // (참고로 Toast에서는 Context가 필요했습니다.)
+
+    FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+    DatabaseReference databaseReference = firebaseDatabase.getReference();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -208,11 +217,13 @@ public class google_map extends AppCompatActivity
     }
 
     LocationCallback locationCallback = new LocationCallback() {
+
         @Override
         public void onLocationResult(LocationResult locationResult) {
             super.onLocationResult(locationResult);
 
             List<Location> locationList = locationResult.getLocations();
+
 
             if (locationList.size() > 0) {
                 location = locationList.get(locationList.size() - 1);
@@ -233,9 +244,10 @@ public class google_map extends AppCompatActivity
                 setCurrentLocation(location, markerTitle, markerSnippet);
 
                 mCurrentLocatiion = location;
-                
 
             }
+
+
         }
     };
 
@@ -253,6 +265,22 @@ public class google_map extends AppCompatActivity
 //        }
 //
 //    }
+
+    private final LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(@NonNull Location location) {
+            double Latitude = location.getLatitude();
+            double Longitude = location.getLongitude();
+
+            final TextView textView1 =(TextView) findViewById(R.id.latitude);
+            textView1.setText((int) Latitude);
+
+            final TextView textView2 = (TextView) findViewById(R.id.longitude);
+            textView2.setText((int) Longitude);
+
+
+        }
+    };
 
     private void startLocationUpdates() {
 
@@ -298,8 +326,11 @@ public class google_map extends AppCompatActivity
 
             if (mMap!=null)
                 mMap.setMyLocationEnabled(true);
+
+            //addChildEvent();
         }
     }
+
     @Override
     protected void onStop() {
 
@@ -311,9 +342,6 @@ public class google_map extends AppCompatActivity
             mFusedLocationClient.removeLocationUpdates(locationCallback);
         }
     }
-
-
-
 
     public String getCurrentAddress(LatLng latlng) {
 
@@ -346,7 +374,55 @@ public class google_map extends AppCompatActivity
             return address.getAddressLine(0);
         }
     }
+/*
 
+
+    private void init(){
+        addresses = new ArrayList<>();
+
+    }
+    private void Location(){
+        Latitude latitude = new latitude();
+        Longitude longitude = new longitude;
+
+        databaseReference.child("Location").push().setValue(Latitude);
+        databaseReference.child("Location").push().setValue(Longitude);
+
+    }
+
+    private void addChildEvent() {
+        databaseReference.child("Location").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                Log.d("latitude", "addChildEvent in");
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+    }
+
+
+*/
 
     public boolean checkLocationServicesStatus() {
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
