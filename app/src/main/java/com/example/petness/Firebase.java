@@ -21,9 +21,6 @@ public class Firebase extends AppCompatActivity {
     private DatabaseReference mDatabase;
     // [END declare_database_ref]
     Intent intent= getIntent();
-    double latitude = intent.getDoubleExtra("latidute",0.0);
-    double longitude = intent.getDoubleExtra("longitude", 0.0);
-   // String longitude = intent.getStringExtra("longitude");
 
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
     DatabaseReference rootRef= firebaseDatabase.getReference();
@@ -42,11 +39,6 @@ public class Firebase extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String location = dataSnapshot.getValue(String.class);
-             //  Log.d(TAG, "Value is : " + latitude);
-              // Log.d(TAG, "Value is : " + longitude);
-                rootRef.child("latitude").setValue(latitude);
-                rootRef.child("longitude").setValue(longitude);
-               // myRef.setValue(TAG, location);
             }
 
             @Override
@@ -67,31 +59,7 @@ public class Firebase extends AppCompatActivity {
     private void addChildEvent() {
     }
 
-
-/*
-    @IgnoreExtraProperties
-    public class location {
-        public String latitude;
-        public String longitude;
-        public HashMap<String, String> result = new HashMap<>();
-        public location(){
-
-        }
-        public location(String latitude, String longitude){
-            this.latitude = latitude;
-            this.longitude = longitude;
-        }
-        @Exclude
-        public HashMap<String, String> toLocaion(){
-            HashMap<String, String> result = new HashMap<>();
-            result.put("latidute",latitude);
-            result.put("longitude",longitude);
-
-            return result;
-        }*/
-
-
-    }
+}
 
     /*
      {

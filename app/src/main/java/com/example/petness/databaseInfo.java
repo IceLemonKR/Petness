@@ -1,11 +1,20 @@
 package com.example.petness;
 
+import android.location.Location;
+
 public class databaseInfo {
 
+    public static Location location;
     private double latitude;
     private double longitude;
 
     public double getLatitude(){
+
+        if(location != null)
+        {
+            latitude = location.getLatitude();
+        }
+
         return latitude;
     }
 
@@ -14,6 +23,11 @@ public class databaseInfo {
     }
 
     public double getLongitude(){
+        if(location != null)
+        {
+            longitude = location.getLongitude();
+        }
+
         return longitude;
     }
 

@@ -32,6 +32,7 @@ import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -74,10 +75,8 @@ public class google_map extends AppCompatActivity
         implements OnMapReadyCallback,
         ActivityCompat.OnRequestPermissionsResultCallback{
 
-    public static final String DATABASE_NAME = "Petness.db";
-    public static final String TABLE_NAME = "Location";
-    public static final String Latitude = "latitude";
-    public static final String Longitude = "longitude";
+    LocationManager mLocMan;
+
     private GoogleMap mMap;
     private Marker currentMarker = null;
 
@@ -97,7 +96,8 @@ public class google_map extends AppCompatActivity
 
     Location mCurrentLocatiion;
     LatLng currentPosition;
-    TextView result;
+    TextView result1;
+    TextView result2;
 
 
     private FusedLocationProviderClient mFusedLocationClient;
@@ -140,6 +140,8 @@ public class google_map extends AppCompatActivity
                 .findFragmentById(R.id.google_map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
+
+        mLocMan = (LocationManager)getSystemService(LOCATION_SERVICE);
 
     }
 
@@ -232,13 +234,17 @@ public class google_map extends AppCompatActivity
                 currentPosition
                         = new LatLng(location.getLatitude(), location.getLongitude());
 
-
+                
                 String markerTitle = getCurrentAddress(currentPosition);
                 String markerSnippet = "위도:" + location.getLatitude()
                         + " 경도:" + location.getLongitude();
 
                 Log.d(TAG, "onLocationResult : " + markerSnippet);
+                TextView textView = (TextView)findViewById(R.id.latitude);
+                //textView.setText(markerSnippet);
 
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(markerSnippet));
+                //startActivity(intent);
 
                 //현재 위치에 마커 생성하고 이동
                 setCurrentLocation(location, markerTitle, markerSnippet);
@@ -246,39 +252,21 @@ public class google_map extends AppCompatActivity
                 mCurrentLocatiion = location;
 
             }
+            double a = location.getLatitude();
+            double b = location.getLongitude();
+//            String c = String.format("%f",a);
+//            String d = String.format("%f",b);
 
-
+            TextView textView1 = (TextView)findViewById(R.id.latitude);
+            textView1.setText(String.valueOf(a));
+            TextView textView2 = (TextView)findViewById(R.id.longitude);
+            textView2.setText(String.valueOf(b));
         }
     };
 
-//    class MyView extends View {
-//
-//         Paint paint = new Paint();
-//         Path path = new Path();
-//        public MyView(Context context) {
-//            super(context);
-//            paint.setStyle(Paint.Style.STROKE);
-//            paint.setStrokeWidth(15f);
-//        }
-//        protected void onDraw(Canvas canvas){
-//            canvas.drawPath(path, paint);
-//        }
-//
-//    }
-
-    private final LocationListener locationListener = new LocationListener() {
+    LocationListener mLinsteners = new LocationListener() {
         @Override
-        public void onLocationChanged(@NonNull Location location) {
-            double Latitude = location.getLatitude();
-            double Longitude = location.getLongitude();
-
-            final TextView textView1 =(TextView) findViewById(R.id.latitude);
-            textView1.setText((int) Latitude);
-
-            final TextView textView2 = (TextView) findViewById(R.id.longitude);
-            textView2.setText((int) Longitude);
-
-
+        public void onLocationChanged(Location location) {
         }
     };
 
@@ -374,55 +362,6 @@ public class google_map extends AppCompatActivity
             return address.getAddressLine(0);
         }
     }
-/*
-
-
-    private void init(){
-        addresses = new ArrayList<>();
-
-    }
-    private void Location(){
-        Latitude latitude = new latitude();
-        Longitude longitude = new longitude;
-
-        databaseReference.child("Location").push().setValue(Latitude);
-        databaseReference.child("Location").push().setValue(Longitude);
-
-    }
-
-    private void addChildEvent() {
-        databaseReference.child("Location").addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                Log.d("latitude", "addChildEvent in");
-
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-
-    }
-
-
-*/
 
     public boolean checkLocationServicesStatus() {
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
