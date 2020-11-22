@@ -108,6 +108,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+
+        Button nxbutton = (Button) findViewById(R.id.nextpage);
+
+        nxbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(),google_map.class);
+                startActivity(intent);
+            }
+        });
     }
     void bluetoothOn() {
         if(mBluetoothAdapter == null) {
@@ -254,4 +264,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+
 }

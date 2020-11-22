@@ -9,12 +9,12 @@ public class databaseInfo {
     private double longitude;
 
     public double getLatitude(){
-
+        /*
         if(location != null)
         {
             latitude = location.getLatitude();
         }
-
+        */
         return latitude;
     }
 
@@ -23,10 +23,10 @@ public class databaseInfo {
     }
 
     public double getLongitude(){
-        if(location != null)
+        /*if(location != null)
         {
             longitude = location.getLongitude();
-        }
+        }*/
 
         return longitude;
     }

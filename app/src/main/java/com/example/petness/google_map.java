@@ -62,6 +62,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -103,6 +104,7 @@ public class google_map extends AppCompatActivity
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest locationRequest;
     private Location location;
+    private ArrayList<Double> DBLocation = new ArrayList<Double>();
 
 
     private View mLayout;  // Snackbar 사용하기 위해서는 View가 필요합니다.
@@ -142,7 +144,7 @@ public class google_map extends AppCompatActivity
         mapFragment.getMapAsync(this);
 
         mLocMan = (LocationManager)getSystemService(LOCATION_SERVICE);
-
+        new LocationCallback();
     }
 
     @Override
@@ -240,8 +242,6 @@ public class google_map extends AppCompatActivity
                         + " 경도:" + location.getLongitude();
 
                 Log.d(TAG, "onLocationResult : " + markerSnippet);
-                TextView textView = (TextView)findViewById(R.id.latitude);
-                //textView.setText(markerSnippet);
 
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(markerSnippet));
                 //startActivity(intent);
@@ -252,24 +252,64 @@ public class google_map extends AppCompatActivity
                 mCurrentLocatiion = location;
 
             }
+
+            //위도, 경도 따로 출력
             double a = location.getLatitude();
             double b = location.getLongitude();
-//            String c = String.format("%f",a);
-//            String d = String.format("%f",b);
 
             TextView textView1 = (TextView)findViewById(R.id.latitude);
             textView1.setText(String.valueOf(a));
             TextView textView2 = (TextView)findViewById(R.id.longitude);
             textView2.setText(String.valueOf(b));
+
+            // 위도, 경도 DB 입력
+            final databaseInfo dbinfo = new databaseInfo();
+            dbinfo.setLatitude((double)a);
+            dbinfo.setLongitude((double)b);
+
+            //databaseReference.child("Petness").child("location").setValue(dbinfo);
+            databaseReference.child("Petness").child("location").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot DataSnapshot) {
+                    for(DataSnapshot postSnapshot : DataSnapshot.getChildren()){
+                        boolean isInterested = (Boolean)postSnapshot.getValue();
+                        if(isInterested){
+                            DBLocation.add((Double) postSnapshot.getValue());
+
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+            /*
+            String A = "";
+            for(int i = 0; i < DBLocation.size(); i++){
+                A += DBLocation.get(i) + ", ";
+            }
+
+            databaseReference.setValue(A);
+            */
         }
     };
 
+    private void DBinfo(){
+       /* databaseInfo dbinfo = new databaseInfo();
+        dbinfo.setLatitude((double)location.getLatitude());
+        dbinfo.setLongitude((double)location.getLongitude());
+
+        databaseReference.child("Petness").child("location").setValue(dbinfo);*/
+    }
+/*
     LocationListener mLinsteners = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
         }
     };
-
+*/
     private void startLocationUpdates() {
 
         if (!checkLocationServicesStatus()) {

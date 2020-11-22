@@ -70,6 +70,13 @@
         android:text="Send Data"
         app:layout_constraintStart_toEndOf="@+id/btnSendData"
         app:layout_constraintTop_toTopOf="@+id/btnSendData" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="다음 페이지"
+            android:id="@+id/nextpage"
+            />
     </LinearLayout>
 </LinearLayout>
 

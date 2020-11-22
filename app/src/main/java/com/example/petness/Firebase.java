@@ -38,7 +38,7 @@ public class Firebase extends AppCompatActivity {
         rootRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                String location = dataSnapshot.getValue(String.class);
+               // String location = dataSnapshot.getValue(String.class);
             }
 
             @Override
