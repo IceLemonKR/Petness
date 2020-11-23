@@ -20,6 +20,9 @@ package com.example.petness;
         import android.widget.TextView;
         import android.widget.Toast;
 
+        import com.google.android.gms.maps.model.Marker;
+        import com.google.android.gms.maps.model.PolylineOptions;
+
         import java.io.IOException;
         import java.io.InputStream;
         import java.io.OutputStream;
@@ -66,8 +69,6 @@ public class MainActivity extends AppCompatActivity {
         mBtnSendData = (Button)findViewById(R.id.btnSendData);
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-
         mBtnBluetoothOn.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
