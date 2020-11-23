@@ -32,6 +32,7 @@ import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -70,6 +71,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Observable;
 
 
 public class google_map extends AppCompatActivity
@@ -104,7 +106,9 @@ public class google_map extends AppCompatActivity
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest locationRequest;
     private Location location;
-    private ArrayList<Double> DBLocation = new ArrayList<Double>();
+    private ArrayList<Double> point = new ArrayList<Double>();
+    private ArrayAdapter adapter;
+
 
 
     private View mLayout;  // Snackbar 사용하기 위해서는 View가 필요합니다.
@@ -250,7 +254,11 @@ public class google_map extends AppCompatActivity
                 setCurrentLocation(location, markerTitle, markerSnippet);
 
                 mCurrentLocatiion = location;
-
+                ArrayList<LatLng> running = new ArrayList<>();
+                PolylineOptions polylineOptions = new PolylineOptions();
+                polylineOptions.color(333);
+                polylineOptions.width(7);
+                mMap.addPolyline(polylineOptions);
             }
 
             //위도, 경도 따로 출력
@@ -266,17 +274,14 @@ public class google_map extends AppCompatActivity
             final databaseInfo dbinfo = new databaseInfo();
             dbinfo.setLatitude((double)a);
             dbinfo.setLongitude((double)b);
+            databaseReference.child("Petness").child("location").setValue(dbinfo);
 
-            //databaseReference.child("Petness").child("location").setValue(dbinfo);
+/*
             databaseReference.child("Petness").child("location").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot DataSnapshot) {
                     for(DataSnapshot postSnapshot : DataSnapshot.getChildren()){
-                        boolean isInterested = (Boolean)postSnapshot.getValue();
-                        if(isInterested){
-                            DBLocation.add((Double) postSnapshot.getValue());
-
-                        }
+                        databaseReference.child("Petness").child("location").setValue(dbinfo);
                     }
                 }
 
@@ -284,7 +289,7 @@ public class google_map extends AppCompatActivity
                 public void onCancelled(@NonNull DatabaseError error) {
 
                 }
-            });
+            });*/
             /*
             String A = "";
             for(int i = 0; i < DBLocation.size(); i++){
@@ -295,7 +300,6 @@ public class google_map extends AppCompatActivity
             */
         }
     };
-
     private void DBinfo(){
        /* databaseInfo dbinfo = new databaseInfo();
         dbinfo.setLatitude((double)location.getLatitude());
