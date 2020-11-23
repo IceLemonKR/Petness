@@ -1,43 +1,30 @@
 package com.example.petness;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.Color;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
-import android.os.strictmode.SqliteObjectLeakedViolation;
-import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.petness.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -53,28 +40,27 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.Exclude;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 
 public class google_map extends AppCompatActivity
         implements OnMapReadyCallback,
-        ActivityCompat.OnRequestPermissionsResultCallback{
+        ActivityCompat.OnRequestPermissionsResultCallback,
+        GoogleMap.OnPolylineClickListener,
+        GoogleMap.OnPolygonClickListener{
 
     LocationManager mLocMan;
 
@@ -220,6 +206,16 @@ public class google_map extends AppCompatActivity
         });
     }
 
+    private double getDistance(double lat1, double lat2, double lon1, double lon2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double temp = 6371 * c;
+        temp=temp*0.621;
+        return temp;
+    }
+
     LocationCallback locationCallback = new LocationCallback() {
 
         @Override
@@ -251,23 +247,62 @@ public class google_map extends AppCompatActivity
 
                 mCurrentLocatiion = location;
 
+                //위도, 경도 따로 출력
+                double a = location.getLatitude();
+                double b = location.getLongitude();
+
+                TextView textView1 = (TextView)findViewById(R.id.latitude);
+                textView1.setText(String.valueOf(a));
+                TextView textView2 = (TextView)findViewById(R.id.longitude);
+                textView2.setText(String.valueOf(b));
+
+                // 위도, 경도 DB 입력
+            /*    final databaseInfo dbinfo1 = new databaseInfo();
+                dbinfo1.setLatitude((double)a);
+                dbinfo1.setLongitude((double)b);
+
+                databaseReference.child("Petness").child("location").setValue(dbinfo1);*/
+
+                ArrayList<String> Num = new ArrayList<String>();
+                ArrayList<String> latitude = new ArrayList<String>();
+                ArrayList<String> longitude = new ArrayList<String>();
+
+                final DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference().child("Num");
+
+                databaseRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot DataSnapshot) {
+                        if(DataSnapshot.hasChild("Num")){
+                            String mNum = DataSnapshot.child("Num").getValue().toString();
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+
             }
 
-            //위도, 경도 따로 출력
-            double a = location.getLatitude();
-            double b = location.getLongitude();
 
-            TextView textView1 = (TextView)findViewById(R.id.latitude);
-            textView1.setText(String.valueOf(a));
-            TextView textView2 = (TextView)findViewById(R.id.longitude);
-            textView2.setText(String.valueOf(b));
 
-            // 위도, 경도 DB 입력
-            final databaseInfo dbinfo = new databaseInfo();
-            dbinfo.setLatitude((double)a);
-            dbinfo.setLongitude((double)b);
+            //final Polyline polyline = mMap.addPolyline((new PolylineOptions().add(new LatLng(a,b)).width(5).color(Color.RED)));
+           /* double distance;
+            Location locationA = new Location("point A");
+            locationA.setLatitude((double)a);
+            locationA.setLongitude((double)b);
 
-            //databaseReference.child("Petness").child("location").setValue(dbinfo);
+            Location locationB = new Location("point B");
+            locationB.setLatitude((double)a);
+            locationB.setLongitude((double)b);
+
+            distance = locationA.distanceTo(locationB)/1000;
+            TextView textView3 = (TextView)findViewById(R.id.KM);
+            textView3.setText(String.valueOf(distance));*/
+/*
             databaseReference.child("Petness").child("location").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot DataSnapshot) {
@@ -284,7 +319,7 @@ public class google_map extends AppCompatActivity
                 public void onCancelled(@NonNull DatabaseError error) {
 
                 }
-            });
+            });*/
             /*
             String A = "";
             for(int i = 0; i < DBLocation.size(); i++){
@@ -296,20 +331,9 @@ public class google_map extends AppCompatActivity
         }
     };
 
-    private void DBinfo(){
-       /* databaseInfo dbinfo = new databaseInfo();
-        dbinfo.setLatitude((double)location.getLatitude());
-        dbinfo.setLongitude((double)location.getLongitude());
+    public class GeoPoint extends Object {
 
-        databaseReference.child("Petness").child("location").setValue(dbinfo);*/
     }
-/*
-    LocationListener mLinsteners = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-        }
-    };
-*/
     private void startLocationUpdates() {
 
         if (!checkLocationServicesStatus()) {
@@ -582,4 +606,13 @@ public class google_map extends AppCompatActivity
         }
     }
 
+    @Override
+    public void onPolygonClick(Polygon polygon) {
+
+    }
+
+    @Override
+    public void onPolylineClick(Polyline polyline) {
+
+    }
 }
