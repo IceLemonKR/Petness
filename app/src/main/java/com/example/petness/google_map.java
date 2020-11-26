@@ -8,6 +8,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -24,6 +25,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
@@ -32,12 +34,22 @@ import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.petness.R;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.FitnessOptions;
+import com.google.android.gms.fitness.data.DataPoint;
+import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -54,6 +66,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.ChildEventListener;
@@ -70,12 +85,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Observable;
+import java.util.concurrent.TimeUnit;
 
 
 public class google_map extends AppCompatActivity
         implements OnMapReadyCallback,
         ActivityCompat.OnRequestPermissionsResultCallback{
 
+    private static final int REQUEST_OAUTH_REQUEST_CODE = 0;
     LocationManager mLocMan;
 
     private GoogleMap mMap;
@@ -90,21 +108,21 @@ public class google_map extends AppCompatActivity
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     boolean needRequest = false;
 
-
     // 앱을 실행하기 위해 필요한 퍼미션을 정의합니다.
     String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};  // 외부 저장소
 
 
     Location mCurrentLocatiion;
     LatLng currentPosition;
-    TextView result1;
-    TextView result2;
 
 
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest locationRequest;
     private Location location;
-    private ArrayList<Double> DBLocation = new ArrayList<Double>();
+    private ArrayList<Double> point = new ArrayList<Double>();
+    private ArrayAdapter adapter;
+    //private LocationListener locListener = new MyLocationListener();
+
 
 
     private View mLayout;  // Snackbar 사용하기 위해서는 View가 필요합니다.
@@ -114,6 +132,9 @@ public class google_map extends AppCompatActivity
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
     DatabaseReference databaseReference = firebaseDatabase.getReference();
 
+
+
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -143,9 +164,14 @@ public class google_map extends AppCompatActivity
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
-        mLocMan = (LocationManager)getSystemService(LOCATION_SERVICE);
+        mLocMan = (LocationManager) getSystemService(LOCATION_SERVICE);
         new LocationCallback();
+
+
+
+
     }
+
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
@@ -219,6 +245,13 @@ public class google_map extends AppCompatActivity
             }
         });
     }
+    public void onResume() {
+        /* 인텐트를 이용하여 다른 액티비티 동작 성공*/
+        super.onResume();
+        Intent intentcnt = new Intent(this, Pedometa.class);
+        startActivity(intentcnt);
+
+    }
 
     LocationCallback locationCallback = new LocationCallback() {
 
@@ -236,7 +269,7 @@ public class google_map extends AppCompatActivity
                 currentPosition
                         = new LatLng(location.getLatitude(), location.getLongitude());
 
-                
+
                 String markerTitle = getCurrentAddress(currentPosition);
                 String markerSnippet = "위도:" + location.getLatitude()
                         + " 경도:" + location.getLongitude();
@@ -257,59 +290,21 @@ public class google_map extends AppCompatActivity
             double a = location.getLatitude();
             double b = location.getLongitude();
 
-            TextView textView1 = (TextView)findViewById(R.id.latitude);
+          /*  TextView textView1 = (TextView)findViewById(R.id.latitude);
             textView1.setText(String.valueOf(a));
             TextView textView2 = (TextView)findViewById(R.id.longitude);
-            textView2.setText(String.valueOf(b));
+            textView2.setText(String.valueOf(b));*/
 
             // 위도, 경도 DB 입력
             final databaseInfo dbinfo = new databaseInfo();
             dbinfo.setLatitude((double)a);
             dbinfo.setLongitude((double)b);
 
-            //databaseReference.child("Petness").child("location").setValue(dbinfo);
-            databaseReference.child("Petness").child("location").addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot DataSnapshot) {
-                    for(DataSnapshot postSnapshot : DataSnapshot.getChildren()){
-                        boolean isInterested = (Boolean)postSnapshot.getValue();
-                        if(isInterested){
-                            DBLocation.add((Double) postSnapshot.getValue());
+            databaseReference.child("Petness").child("location").setValue(dbinfo);
 
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-            /*
-            String A = "";
-            for(int i = 0; i < DBLocation.size(); i++){
-                A += DBLocation.get(i) + ", ";
-            }
-
-            databaseReference.setValue(A);
-            */
         }
     };
 
-    private void DBinfo(){
-       /* databaseInfo dbinfo = new databaseInfo();
-        dbinfo.setLatitude((double)location.getLatitude());
-        dbinfo.setLongitude((double)location.getLongitude());
-
-        databaseReference.child("Petness").child("location").setValue(dbinfo);*/
-    }
-/*
-    LocationListener mLinsteners = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-        }
-    };
-*/
     private void startLocationUpdates() {
 
         if (!checkLocationServicesStatus()) {

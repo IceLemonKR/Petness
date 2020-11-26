@@ -7,6 +7,7 @@ public class databaseInfo {
     public static Location location;
     private double latitude;
     private double longitude;
+    private int WalkCnt;
 
     public double getLatitude(){
         /*
@@ -33,5 +34,14 @@ public class databaseInfo {
 
     public void setLongitude(double longitude){
         this.longitude = longitude;
+    }
+
+    public int getWalkCnt(){
+
+        return WalkCnt;
+    }
+
+    public void setWalkCnt(int WalCnt){
+        this.WalkCnt = WalCnt;
     }
 }

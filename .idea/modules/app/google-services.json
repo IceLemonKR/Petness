@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "449264715094",
+    "firebase_url": "https://petness-map-api.firebaseio.com",
+    "project_id": "petness-map-api",
+    "storage_bucket": "petness-map-api.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:449264715094:android:d607f23ab467306ba582f7",
+        "android_client_info": {
+          "package_name": "com.example.petness"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "449264715094-odukngrsm97jm8s85ldslmojmuo1023a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.petness",
+            "certificate_hash": "6a389fa2c5f48f865bf0e0b68c6f2cb7cb6c434e"
+          }
+        },
+        {
+          "client_id": "449264715094-oitaom0bmdfsi5asequf4qaipq015ll4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZveVrz1EpKJNqa2um-XHVyT9v3CKXu4I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "449264715094-oitaom0bmdfsi5asequf4qaipq015ll4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

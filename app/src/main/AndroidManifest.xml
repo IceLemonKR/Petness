@@ -21,13 +21,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Firebase"></activity>
+        <activity android:name=".Pedometa">
+
+
+
+        </activity>
+        <activity android:name=".Firebase" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBZveVrz1EpKJNqa2um-XHVyT9v3CKXu4I" />
 
-        <activity android:name=".google_map">
+        <activity android:name=".google_map" >
 
         </activity>
         <activity android:name=".MainActivity">
