@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,6 +19,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -41,15 +46,6 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.petness.R;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.fitness.Fitness;
-import com.google.android.gms.fitness.FitnessOptions;
-import com.google.android.gms.fitness.data.DataPoint;
-import com.google.android.gms.fitness.data.DataSet;
-import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.fitness.request.DataReadRequest;
-import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -65,33 +61,30 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.Exclude;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.database.sqlite.SQLiteOpenHelper;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Observable;
-import java.util.concurrent.TimeUnit;
 
 
 public class google_map extends AppCompatActivity
         implements OnMapReadyCallback,
-        ActivityCompat.OnRequestPermissionsResultCallback{
+        ActivityCompat.OnRequestPermissionsResultCallback,
+        SensorEventListener {
 
     private static final int REQUEST_OAUTH_REQUEST_CODE = 0;
     LocationManager mLocMan;
@@ -129,9 +122,47 @@ public class google_map extends AppCompatActivity
     private SQLiteOpenHelper DatabaseHelper;
     // (참고로 Toast에서는 Context가 필요했습니다.)
 
+
+
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
     DatabaseReference databaseReference = firebaseDatabase.getReference();
 
+    DBHelper dbHelper;
+    final static String dbName = "WalkCount.db";
+    final static int dbVersion = 2;
+    public static Context mContext;
+
+    /*
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saveInstanceState){
+        // TODO Auto-generated method stub
+        View root = inflater.inflate(R.layout.google_map, container, false);
+
+
+
+        return root;
+    }*/
+
+
+    public static int cnt = 0;
+    public static String cnt1;
+
+    private TextView tView;
+    private Button resetBtn;
+
+    private long lastTime;
+    private float speed;
+    private float lastX;
+    private float lastY;
+    private float lastZ;
+    private float x, y, z;
+
+    private static final int SHAKE_THRESHOLD = 800;
+    private static final int DATA_X = SensorManager.DATA_X;
+    private static final int DATA_Y = SensorManager.DATA_Y;
+    private static final int DATA_Z = SensorManager.DATA_Z;
+
+    private SensorManager sensorManager;
+    private Sensor accelerormeterSensor;
 
 
     @SuppressLint("SetTextI18n")
@@ -167,8 +198,25 @@ public class google_map extends AppCompatActivity
         mLocMan = (LocationManager) getSystemService(LOCATION_SERVICE);
         new LocationCallback();
 
+//        /* 인텐트를 이용하여 다른 액티비티 동작 성공*/
+//        Intent intentcnt = new Intent(this, Pedometa.class);
+//        startActivity(intentcnt);
 
 
+
+
+
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accelerormeterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        tView = (TextView) findViewById(R.id.walk);
+        //resetBtn = (Button) findViewById(R.id.resetBtn);
+
+        tView.setText("Count : " + cnt);
+
+
+        dbHelper = new DBHelper(this, dbName,null, dbVersion);
 
     }
 
@@ -244,13 +292,6 @@ public class google_map extends AppCompatActivity
                 Log.d( TAG, "onMapClick :");
             }
         });
-    }
-    public void onResume() {
-        /* 인텐트를 이용하여 다른 액티비티 동작 성공*/
-        super.onResume();
-        Intent intentcnt = new Intent(this, Pedometa.class);
-        startActivity(intentcnt);
-
     }
 
     LocationCallback locationCallback = new LocationCallback() {
@@ -352,6 +393,10 @@ public class google_map extends AppCompatActivity
 
             //addChildEvent();
         }
+        /*--------------------------------------만보기(Pedometa) onStart-------------------------------------------------*/
+        if (accelerormeterSensor != null)
+            sensorManager.registerListener(this, accelerormeterSensor,
+                    SensorManager.SENSOR_DELAY_GAME);
     }
 
     @Override
@@ -364,6 +409,9 @@ public class google_map extends AppCompatActivity
             Log.d(TAG, "onStop : call stopLocationUpdates");
             mFusedLocationClient.removeLocationUpdates(locationCallback);
         }
+        /*--------------------------------------만보기(Pedometa) onStop-------------------------------------------------*/
+        if (sensorManager != null)
+            sensorManager.unregisterListener(this);
     }
 
     public String getCurrentAddress(LatLng latlng) {
@@ -576,5 +624,119 @@ public class google_map extends AppCompatActivity
             }
         }
     }
+
+    /*---------------------------------------------------------------------------------------------------*/
+
+    static class DBHelper extends SQLiteOpenHelper{
+
+        public DBHelper(@Nullable Context context, @Nullable String name, @Nullable CursorFactory factory, int version) {
+            super(context, name, factory, version);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase sqLiteDatabase) {
+            sqLiteDatabase.execSQL("CREATE TABLE WalkCount (Count INTEGER);");
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS WalkCount");
+            onCreate(sqLiteDatabase);
+        }
+
+        public void onSelect(SQLiteDatabase sqLiteDatabase, int i2, int i3){
+            sqLiteDatabase.execSQL("SELECT * FROM WalkCount.db");
+        }
+    }
+
+
+/*--------------------------------------만보기(Pedometa)-------------------------------------------------*/
+
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            long currentTime = System.currentTimeMillis();
+            long gabOfTime = (currentTime - lastTime);
+            if (gabOfTime > 100) {
+                lastTime = currentTime;
+                x = event.values[SensorManager.DATA_X];
+                y = event.values[SensorManager.DATA_Y];
+                z = event.values[SensorManager.DATA_Z];
+
+                speed = Math.abs(x + y + z - lastX - lastY - lastZ) / gabOfTime * 10000;
+
+                if (speed > SHAKE_THRESHOLD) {
+                    tView.setText("Count : " + (++cnt));
+                }
+
+                lastX = event.values[DATA_X];
+                lastY = event.values[DATA_Y];
+                lastZ = event.values[DATA_Z];
+
+                cnt1 = String.valueOf(cnt);
+
+                /*final databaseInfo dbinfo = new databaseInfo();
+                dbinfo.setWalkCnt(cnt);
+                databaseReference.child("Petness").child("location").setValue(dbinfo);*/
+
+
+            }
+        }
+
+
+
+//        Intent intentcnt = new Intent(this, google_map.class);
+//        intentcnt.putExtra("cnt", cnt);
+//        startActivities(Intent);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+    public void mOnClick(View v) {
+            switch (v.getId()) {
+            case R.id.End :
+                /*cnt = 0;
+                tView.setText("" + cnt);*/
+                addData();
+                mContext = this;
+                Intent intent = new Intent(this, Array_View.class);
+                startActivity(intent);
+                    break;
+        }
+        dbHelper.close();
+    }
+
+    private void addData(){
+
+       /* db = dbHelper.getWritableDatabase();
+        sql = String.format("INSERT INTO WalkCount Values(' "+ cnt1 + "',0);");
+        db.execSQL(sql);*/
+        Map<String, Object> WalkCount = new HashMap<>();
+        long now = System.currentTimeMillis();
+        Date date = new Date(now);
+        WalkCount.put("Count", cnt);
+        WalkCount.put("day", date);
+
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Petness").add(WalkCount).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+            @Override
+            public void onSuccess(DocumentReference documentReference) {
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+            }
+        });
+    }
+
 
 }

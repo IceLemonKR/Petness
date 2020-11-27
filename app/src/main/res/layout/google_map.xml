@@ -16,6 +16,7 @@
             android:layout_height="match_parent"
             android:text="산책 끝"
             android:id="@+id/End"
+            android:onClick="mOnClick"
 
             />
         <TextView
