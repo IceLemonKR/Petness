@@ -120,7 +120,7 @@ public class Array_View extends AppCompatActivity {
         Log.d("test : ",sql);
 
     }
-
+//
 
     /*private void selectWhereDoc(){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
