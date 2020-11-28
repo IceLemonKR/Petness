@@ -68,12 +68,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.type.DateTime;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -718,10 +721,11 @@ public class google_map extends AppCompatActivity
         sql = String.format("INSERT INTO WalkCount Values(' "+ cnt1 + "',0);");
         db.execSQL(sql);*/
         Map<String, Object> WalkCount = new HashMap<>();
-        long now = System.currentTimeMillis();
-        Date date = new Date(now);
+        SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd --- HH시 mm분 ss초 ", Locale.getDefault());
+        String format_time1 = sfd.format(System.currentTimeMillis());
+
         WalkCount.put("Count", cnt);
-        WalkCount.put("day", date);
+        WalkCount.put("day", format_time1);
 
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();

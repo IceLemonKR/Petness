@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -57,36 +58,43 @@ public class Array_View extends AppCompatActivity {
         listview.setAdapter(adapter);
 
         View.OnClickListener listener = new View.OnClickListener() {
-                SQLiteDatabase db1;
-                String sql;
             @Override
             public void onClick(View view) {
-               /* long now = System.currentTimeMillis();
-                Date date = new Date(now);
-                //  formatDate = sdfNow.format(date);
-                Collections.reverse(items);
-                items.add( " / " + "동물발견!!!!!!!!!");
-                //  items.add(formatDate + " / " + "동물발견!!!!!!!!!");
-                Collections.reverse(items);
-                // listview 갱신
-                adapter.notifyDataSetChanged();*/
-               switch (view.getId()){
-                   case R.id.btnConnect:
-                       selectData();
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                db.collection("Petness")
+                        .orderBy("", Query.Direction.DESCENDING)
+                        .get()
+                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    for (QueryDocumentSnapshot document : task.getResult()) {
+                                        Log.d(" z", null + "" + document.getData());
 
-//                    Cursor cursor = db1.rawQuery(sql, null);
-//                    if(cursor.getCount() > 0){
-//                        while(cursor.moveToNext()){
-//                            Collections.reverse(items);
-//                            items.add(String.format("\n걸음수 : %s",cursor.getString(0)));
-//                            Collections.reverse(items);
-//                            adapter.notifyDataSetChanged();
-//                        }
-//                    }
-               }
-                dbHelper.close();
+
+                                        items.add(null + "" + document.getData());
+                                        Collections.reverse(items);
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                } else {
+                                    Log.d("z", "Error getting documents: ", task.getException());
+                                }
+                            }
+                        });
             }
         };
+
+        /*
+        *  long now = System.currentTimeMillis();
+                Date date = new Date(now);
+              //  formatDate = sdfNow.format(date);
+                Collections.reverse(items);
+                items.add( " / " + "동물발견!!!!!!!!!");
+              //  items.add(formatDate + " / " + "동물발견!!!!!!!!!");
+                Collections.reverse(items);
+                // listview 갱신
+                adapter.notifyDataSetChanged();
+        * */
         Button deleteButton = (Button)findViewById(R.id.del);
         Button btnConnect = (Button) findViewById(R.id.btnConnect);
         Button del = (Button) findViewById(R.id.del);
