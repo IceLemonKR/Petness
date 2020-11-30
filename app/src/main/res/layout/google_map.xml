@@ -14,6 +14,14 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:text="산책 시작"
+            android:id="@+id/start"
+            android:onClick="mOnClick"
+
+            />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:text="산책 끝"
             android:id="@+id/End"
             android:onClick="mOnClick"

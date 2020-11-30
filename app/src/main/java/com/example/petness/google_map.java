@@ -13,6 +13,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -61,13 +62,19 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.type.DateTime;
 
 import android.database.sqlite.SQLiteDatabase;
@@ -111,7 +118,6 @@ public class google_map extends AppCompatActivity
     Location mCurrentLocatiion;
     LatLng currentPosition;
 
-
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest locationRequest;
     private Location location;
@@ -120,13 +126,11 @@ public class google_map extends AppCompatActivity
     //private LocationListener locListener = new MyLocationListener();
 
 
-
     private View mLayout;  // Snackbar 사용하기 위해서는 View가 필요합니다.
     private SQLiteOpenHelper DatabaseHelper;
     // (참고로 Toast에서는 Context가 필요했습니다.)
 
-
-
+    public int flag = 0;
     FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
     DatabaseReference databaseReference = firebaseDatabase.getReference();
 
@@ -134,17 +138,6 @@ public class google_map extends AppCompatActivity
     final static String dbName = "WalkCount.db";
     final static int dbVersion = 2;
     public static Context mContext;
-
-    /*
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saveInstanceState){
-        // TODO Auto-generated method stub
-        View root = inflater.inflate(R.layout.google_map, container, false);
-
-
-
-        return root;
-    }*/
-
 
     public static int cnt = 0;
     public static String cnt1;
@@ -201,22 +194,14 @@ public class google_map extends AppCompatActivity
         mLocMan = (LocationManager) getSystemService(LOCATION_SERVICE);
         new LocationCallback();
 
-//        /* 인텐트를 이용하여 다른 액티비티 동작 성공*/
-//        Intent intentcnt = new Intent(this, Pedometa.class);
-//        startActivity(intentcnt);
-
-
-
-
-
-
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerormeterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         tView = (TextView) findViewById(R.id.walk);
         //resetBtn = (Button) findViewById(R.id.resetBtn);
 
-        tView.setText("Count : " + cnt);
+
+            tView.setText("Count : " + cnt);
 
 
         dbHelper = new DBHelper(this, dbName,null, dbVersion);
@@ -226,7 +211,7 @@ public class google_map extends AppCompatActivity
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
-        Log.d(TAG, "onMapReady :");
+      //  Log.d(TAG, "onMapReady :");
 
         mMap = googleMap;
 
@@ -292,7 +277,7 @@ public class google_map extends AppCompatActivity
             @Override
             public void onMapClick(LatLng latLng) {
 
-                Log.d( TAG, "onMapClick :");
+             //   Log.d( TAG, "onMapClick :");
             }
         });
     }
@@ -318,7 +303,7 @@ public class google_map extends AppCompatActivity
                 String markerSnippet = "위도:" + location.getLatitude()
                         + " 경도:" + location.getLongitude();
 
-                Log.d(TAG, "onLocationResult : " + markerSnippet);
+               // Log.d(TAG, "onLocationResult : " + markerSnippet);
 
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(markerSnippet));
                 //startActivity(intent);
@@ -329,15 +314,10 @@ public class google_map extends AppCompatActivity
                 mCurrentLocatiion = location;
 
             }
-
+/*
             //위도, 경도 따로 출력
             double a = location.getLatitude();
             double b = location.getLongitude();
-
-          /*  TextView textView1 = (TextView)findViewById(R.id.latitude);
-            textView1.setText(String.valueOf(a));
-            TextView textView2 = (TextView)findViewById(R.id.longitude);
-            textView2.setText(String.valueOf(b));*/
 
             // 위도, 경도 DB 입력
             final databaseInfo dbinfo = new databaseInfo();
@@ -345,7 +325,7 @@ public class google_map extends AppCompatActivity
             dbinfo.setLongitude((double)b);
 
             databaseReference.child("Petness").child("location").setValue(dbinfo);
-
+*/
         }
     };
 
@@ -353,7 +333,7 @@ public class google_map extends AppCompatActivity
 
         if (!checkLocationServicesStatus()) {
 
-            Log.d(TAG, "startLocationUpdates : call showDialogForLocationServiceSetting");
+          //  Log.d(TAG, "startLocationUpdates : call showDialogForLocationServiceSetting");
             showDialogForLocationServiceSetting();
         }else {
 
@@ -366,12 +346,12 @@ public class google_map extends AppCompatActivity
             if (hasFineLocationPermission != PackageManager.PERMISSION_GRANTED ||
                     hasCoarseLocationPermission != PackageManager.PERMISSION_GRANTED   ) {
 
-                Log.d(TAG, "startLocationUpdates : 퍼미션 안가지고 있음");
+             //   Log.d(TAG, "startLocationUpdates : 퍼미션 안가지고 있음");
                 return;
             }
 
 
-            Log.d(TAG, "startLocationUpdates : call mFusedLocationClient.requestLocationUpdates");
+          //  Log.d(TAG, "startLocationUpdates : call mFusedLocationClient.requestLocationUpdates");
 
             mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
 
@@ -384,11 +364,11 @@ public class google_map extends AppCompatActivity
     protected void onStart() {
         super.onStart();
 
-        Log.d(TAG, "onStart");
+       // Log.d(TAG, "onStart");
 
         if (checkPermission()) {
 
-            Log.d(TAG, "onStart : call mFusedLocationClient.requestLocationUpdates");
+          //  Log.d(TAG, "onStart : call mFusedLocationClient.requestLocationUpdates");
             mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
 
             if (mMap!=null)
@@ -409,7 +389,8 @@ public class google_map extends AppCompatActivity
 
         if (mFusedLocationClient != null) {
 
-            Log.d(TAG, "onStop : call stopLocationUpdates");
+          //
+            //  Log.d(TAG, "onStop : call stopLocationUpdates");
             mFusedLocationClient.removeLocationUpdates(locationCallback);
         }
         /*--------------------------------------만보기(Pedometa) onStop-------------------------------------------------*/
@@ -618,7 +599,7 @@ public class google_map extends AppCompatActivity
             if (checkLocationServicesStatus()) {
                 if (checkLocationServicesStatus()) {
 
-                    Log.d(TAG, "onActivityResult : GPS 활성화 되있음");
+                 //   Log.d(TAG, "onActivityResult : GPS 활성화 되있음");
 
 
                     needRequest = true;
@@ -671,30 +652,22 @@ public class google_map extends AppCompatActivity
 
                 speed = Math.abs(x + y + z - lastX - lastY - lastZ) / gabOfTime * 10000;
 
-                if (speed > SHAKE_THRESHOLD) {
-                    tView.setText("Count : " + (++cnt));
+                if(flag==1) {
+                    if (speed > SHAKE_THRESHOLD) {
+                        tView.setText("Count : " + (++cnt));
+                    }
                 }
 
-                lastX = event.values[DATA_X];
-                lastY = event.values[DATA_Y];
-                lastZ = event.values[DATA_Z];
+                    lastX = event.values[DATA_X];
+                    lastY = event.values[DATA_Y];
+                    lastZ = event.values[DATA_Z];
 
-                cnt1 = String.valueOf(cnt);
+                    cnt1 = String.valueOf(cnt);
 
-                /*final databaseInfo dbinfo = new databaseInfo();
-                dbinfo.setWalkCnt(cnt);
-                databaseReference.child("Petness").child("location").setValue(dbinfo);*/
-
-
+                }
             }
         }
 
-
-
-//        Intent intentcnt = new Intent(this, google_map.class);
-//        intentcnt.putExtra("cnt", cnt);
-//        startActivities(Intent);
-    }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -703,6 +676,10 @@ public class google_map extends AppCompatActivity
 
     public void mOnClick(View v) {
             switch (v.getId()) {
+                case R.id.start :
+                    flag = 1;
+                    break;
+
             case R.id.End :
                 /*cnt = 0;
                 tView.setText("" + cnt);*/
@@ -710,6 +687,9 @@ public class google_map extends AppCompatActivity
                 mContext = this;
                 Intent intent = new Intent(this, Array_View.class);
                 startActivity(intent);
+                flag = 0;
+                cnt=0;
+                tView.setText("Count : " +  0);
                     break;
         }
         dbHelper.close();
@@ -717,21 +697,23 @@ public class google_map extends AppCompatActivity
 
     private void addData(){
 
-       /* db = dbHelper.getWritableDatabase();
-        sql = String.format("INSERT INTO WalkCount Values(' "+ cnt1 + "',0);");
-        db.execSQL(sql);*/
-        Map<String, Object> WalkCount = new HashMap<>();
+
         SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd --- HH시 mm분 ss초 ", Locale.getDefault());
         String format_time1 = sfd.format(System.currentTimeMillis());
-
+        Map<String, Object> WalkCount = new HashMap<>();
         WalkCount.put("Count", cnt);
         WalkCount.put("day", format_time1);
 
+        Intent intent = new Intent(this, Array_View.class);
+        startActivity(intent);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Petness").add(WalkCount).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+        db.collection("Petness")
+                .document(format_time1)
+                .set(WalkCount)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void onSuccess(DocumentReference documentReference) {
+            public void onSuccess(Void aVoid) {
 
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -741,6 +723,5 @@ public class google_map extends AppCompatActivity
             }
         });
     }
-
 
 }
