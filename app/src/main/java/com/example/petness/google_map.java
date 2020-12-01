@@ -160,7 +160,6 @@ public class google_map extends AppCompatActivity
     private SensorManager sensorManager;
     private Sensor accelerormeterSensor;
 
-
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,17 +200,16 @@ public class google_map extends AppCompatActivity
         //resetBtn = (Button) findViewById(R.id.resetBtn);
 
 
-            tView.setText("Count : " + cnt);
+        tView.setText("Count : " + cnt);
 
 
         dbHelper = new DBHelper(this, dbName,null, dbVersion);
-
     }
 
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
-      //  Log.d(TAG, "onMapReady :");
+        //  Log.d(TAG, "onMapReady :");
 
         mMap = googleMap;
 
@@ -277,7 +275,7 @@ public class google_map extends AppCompatActivity
             @Override
             public void onMapClick(LatLng latLng) {
 
-             //   Log.d( TAG, "onMapClick :");
+                //   Log.d( TAG, "onMapClick :");
             }
         });
     }
@@ -303,7 +301,7 @@ public class google_map extends AppCompatActivity
                 String markerSnippet = "위도:" + location.getLatitude()
                         + " 경도:" + location.getLongitude();
 
-               // Log.d(TAG, "onLocationResult : " + markerSnippet);
+                // Log.d(TAG, "onLocationResult : " + markerSnippet);
 
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(markerSnippet));
                 //startActivity(intent);
@@ -333,7 +331,7 @@ public class google_map extends AppCompatActivity
 
         if (!checkLocationServicesStatus()) {
 
-          //  Log.d(TAG, "startLocationUpdates : call showDialogForLocationServiceSetting");
+            //  Log.d(TAG, "startLocationUpdates : call showDialogForLocationServiceSetting");
             showDialogForLocationServiceSetting();
         }else {
 
@@ -346,12 +344,12 @@ public class google_map extends AppCompatActivity
             if (hasFineLocationPermission != PackageManager.PERMISSION_GRANTED ||
                     hasCoarseLocationPermission != PackageManager.PERMISSION_GRANTED   ) {
 
-             //   Log.d(TAG, "startLocationUpdates : 퍼미션 안가지고 있음");
+                //   Log.d(TAG, "startLocationUpdates : 퍼미션 안가지고 있음");
                 return;
             }
 
 
-          //  Log.d(TAG, "startLocationUpdates : call mFusedLocationClient.requestLocationUpdates");
+            //  Log.d(TAG, "startLocationUpdates : call mFusedLocationClient.requestLocationUpdates");
 
             mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
 
@@ -364,11 +362,11 @@ public class google_map extends AppCompatActivity
     protected void onStart() {
         super.onStart();
 
-       // Log.d(TAG, "onStart");
+        // Log.d(TAG, "onStart");
 
         if (checkPermission()) {
 
-          //  Log.d(TAG, "onStart : call mFusedLocationClient.requestLocationUpdates");
+            //  Log.d(TAG, "onStart : call mFusedLocationClient.requestLocationUpdates");
             mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
 
             if (mMap!=null)
@@ -389,7 +387,7 @@ public class google_map extends AppCompatActivity
 
         if (mFusedLocationClient != null) {
 
-          //
+            //
             //  Log.d(TAG, "onStop : call stopLocationUpdates");
             mFusedLocationClient.removeLocationUpdates(locationCallback);
         }
@@ -599,9 +597,7 @@ public class google_map extends AppCompatActivity
             if (checkLocationServicesStatus()) {
                 if (checkLocationServicesStatus()) {
 
-                 //   Log.d(TAG, "onActivityResult : GPS 활성화 되있음");
-
-
+                    //   Log.d(TAG, "onActivityResult : GPS 활성화 되있음");
                     needRequest = true;
 
                 }
@@ -634,7 +630,7 @@ public class google_map extends AppCompatActivity
     }
 
 
-/*--------------------------------------만보기(Pedometa)-------------------------------------------------*/
+    /*--------------------------------------만보기(Pedometa)-------------------------------------------------*/
 
 
     @SuppressLint("SetTextI18n")
@@ -658,15 +654,15 @@ public class google_map extends AppCompatActivity
                     }
                 }
 
-                    lastX = event.values[DATA_X];
-                    lastY = event.values[DATA_Y];
-                    lastZ = event.values[DATA_Z];
+                lastX = event.values[DATA_X];
+                lastY = event.values[DATA_Y];
+                lastZ = event.values[DATA_Z];
 
-                    cnt1 = String.valueOf(cnt);
+                cnt1 = String.valueOf(cnt);
 
-                }
             }
         }
+    }
 
 
     @Override
@@ -675,10 +671,10 @@ public class google_map extends AppCompatActivity
     }
 
     public void mOnClick(View v) {
-            switch (v.getId()) {
-                case R.id.start :
-                    flag = 1;
-                    break;
+        switch (v.getId()) {
+            case R.id.start :
+                flag = 1;
+                break;
 
             case R.id.End :
                 /*cnt = 0;
@@ -690,38 +686,33 @@ public class google_map extends AppCompatActivity
                 flag = 0;
                 cnt=0;
                 tView.setText("Count : " +  0);
-                    break;
+                break;
         }
         dbHelper.close();
     }
 
-    private void addData(){
-
-
+    private void addData() {
         SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd --- HH시 mm분 ss초 ", Locale.getDefault());
-        String format_time1 = sfd.format(System.currentTimeMillis());
-        Map<String, Object> WalkCount = new HashMap<>();
+        final String format_time1 = sfd.format(System.currentTimeMillis());
+        final Map<String, Object> WalkCount = new HashMap<>();
         WalkCount.put("Count", cnt);
         WalkCount.put("day", format_time1);
 
-        Intent intent = new Intent(this, Array_View.class);
-        startActivity(intent);
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Petness")
                 .document(format_time1)
                 .set(WalkCount)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
+                    @Override
+                    public void onSuccess(Void aVoid) {
 
-            }
-        }).addOnFailureListener(new OnFailureListener() {
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
 
             }
         });
-    }
 
+    }
 }

@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Array_View extends AppCompatActivity {
-
+    private static final String TAG = "Array_View_example";
 
 
     // 현재시간을 msec 으로 구한다.
@@ -51,20 +51,25 @@ public class Array_View extends AppCompatActivity {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     google_map.DBHelper dbHelper;
     Intent a = getIntent();
+    final ArrayList<String> items = new ArrayList<String>();
+
+    // ArrayAdapter 생성. 아이템 View를 선택(single choice)가능하도록 만듦.
+    ArrayAdapter adapter;
+    // listview 생성 및 adapter 지정.
+    ListView listview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_array__view);
         dateNow = (TextView) findViewById(R.id.dateNow);
-        final ArrayList<String> items = new ArrayList<String>();
-        // ArrayAdapter 생성. 아이템 View를 선택(single choice)가능하도록 만듦.
-        final ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_multiple_choice, items);
-        // listview 생성 및 adapter 지정.
-        final ListView listview = (ListView) findViewById(R.id.listview1);
+        adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_multiple_choice, items);
+        listview = (ListView) findViewById(R.id.listview1);
         listview.setAdapter(adapter);
 
+
         listCreate();
+
 
         Button button = (Button)findViewById(R.id.del);
         button.setOnClickListener(new Button.OnClickListener(){
@@ -77,13 +82,6 @@ public class Array_View extends AppCompatActivity {
     }
 
     public void listCreate(){
-        final ArrayList<String> items = new ArrayList<String>();
-        // ArrayAdapter 생성. 아이템 View를 선택(single choice)가능하도록 만듦.
-        final ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_multiple_choice, items);
-        // listview 생성 및 adapter 지정.
-        final ListView listview = (ListView) findViewById(R.id.listview1);
-        listview.setAdapter(adapter);
-
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         db.collection("Petness")
@@ -96,7 +94,7 @@ public class Array_View extends AppCompatActivity {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 //Log.d(" z", null + "" + document.getData());
                                 items.add(document.getId()+ "\n" + document.getData().get("Count"));
-                               // Collections.reverse(items);
+                                // Collections.reverse(items);
                                 adapter.notifyDataSetChanged();
                             }
                         } else {
@@ -105,24 +103,42 @@ public class Array_View extends AppCompatActivity {
                     }
                 });
     }
-
     public void listDelete(){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Petness")
-        .document()
-        .delete()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
 
+        SparseBooleanArray checkedItems = listview.getCheckedItemPositions();
+        int count = adapter.getCount() ;
 
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
+        for (int i = count-1; i >= 0; i--) {
+            if (checkedItems.get(i)) {
+                final int finalI = i;
+                //Log.d(TAG, String.valueOf(finalI));
+                db.collection("Petness")
+                        .document(items.get(i).split("\n")[0])
+                        .delete()
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                //Log.d(TAG, "DocumentSnapshot successfully deleted!");
+                                //Log.d(TAG, items.get(finalI).split("\n")[0]);
+                                items.remove(finalI);
+                                adapter.notifyDataSetChanged();
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                              //  Log.d(TAG, "DocumentSnapshot unsuccessfully deleted!");
+                            }
+                        });
+            }
+        }
 
-                    }
-                });
+        // 모든 선택 상태 초기화.
+        listview.clearChoices() ;
+
     }
+
 }
+
+
