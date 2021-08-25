@@ -1,5 +1,15 @@
 package com.example.petness;
 
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -64,12 +74,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
-
-public class google_map extends AppCompatActivity
+public class Frag2 extends Fragment
         implements OnMapReadyCallback,
         ActivityCompat.OnRequestPermissionsResultCallback,
-        SensorEventListener {
+        SensorEventListener,
+        View.OnClickListener{
+    private View view;
+
 
     private static final int REQUEST_OAUTH_REQUEST_CODE = 0;
     LocationManager mLocMan;
@@ -116,6 +129,7 @@ public class google_map extends AppCompatActivity
 
     public static int cnt = 0;
     public static String cnt1;
+    public static String t1 = "보";
 
     private TextView tView;
     private Button resetBtn;
@@ -135,16 +149,17 @@ public class google_map extends AppCompatActivity
     private SensorManager sensorManager;
     private Sensor accelerormeterSensor;
 
-    @SuppressLint("SetTextI18n")
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+       // view = inflater.inflate(R.layout.frag2,container, false);
+
+        getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        view = inflater.inflate(R.layout.frag2, container, false);
+        //setContentView(R.layout.google_map);
 
-        setContentView(R.layout.google_map);
-
-        mLayout = findViewById(R.id.layout_main);
+        mLayout = view.findViewById(R.id.layout_main);
 
         locationRequest = new LocationRequest()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
@@ -156,30 +171,37 @@ public class google_map extends AppCompatActivity
                 new LocationSettingsRequest.Builder();
 
         builder.addLocationRequest(locationRequest);
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
-
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.google_map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
 
-        mLocMan = (LocationManager) getSystemService(LOCATION_SERVICE);
+        mLocMan = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        mLocMan = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         new LocationCallback();
 
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
         accelerormeterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-        tView = (TextView) findViewById(R.id.walk);
+        tView = (TextView) view.findViewById(R.id.walk);
         //resetBtn = (Button) findViewById(R.id.resetBtn);
 
 
-        tView.setText("Count : " + cnt);
+        tView.setText(cnt + " 보");
 
 
-        dbHelper = new DBHelper(this, dbName,null, dbVersion);
+        dbHelper = new DBHelper(getActivity(), dbName,null, dbVersion);
+
+        Button start = (Button)view.findViewById(R.id.start);
+        start.setOnClickListener(this);
+
+        Button end = (Button)view.findViewById(R.id.End);
+        end.setOnClickListener(this);
 
 
+        return view;
     }
 
 
@@ -197,9 +219,9 @@ public class google_map extends AppCompatActivity
 
         //런타임 퍼미션 처리
         // 1. 위치 퍼미션을 가지고 있는지 체크합니다.
-        int hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
+        int hasFineLocationPermission = ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION);
-        int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
+        int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_COARSE_LOCATION);
 
 
@@ -217,7 +239,7 @@ public class google_map extends AppCompatActivity
         }else {  //2. 퍼미션 요청을 허용한 적이 없다면 퍼미션 요청이 필요합니다. 2가지 경우(3-1, 4-1)가 있습니다.
 
             // 3-1. 사용자가 퍼미션 거부를 한 적이 있는 경우에는
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), REQUIRED_PERMISSIONS[0])) {
 
                 // 3-2. 요청을 진행하기 전에 사용자가에게 퍼미션이 필요한 이유를 설명해줄 필요가 있습니다.
                 Snackbar.make(mLayout, "이 앱을 실행하려면 위치 접근 권한이 필요합니다.",
@@ -227,7 +249,7 @@ public class google_map extends AppCompatActivity
                     public void onClick(View view) {
 
                         // 3-3. 사용자게에 퍼미션 요청을 합니다. 요청 결과는 onRequestPermissionResult에서 수신됩니다.
-                        ActivityCompat.requestPermissions( google_map.this, REQUIRED_PERMISSIONS,
+                        ActivityCompat.requestPermissions( getActivity(), REQUIRED_PERMISSIONS,
                                 PERMISSIONS_REQUEST_CODE);
                     }
                 }).show();
@@ -236,7 +258,7 @@ public class google_map extends AppCompatActivity
             } else {
                 // 4-1. 사용자가 퍼미션 거부를 한 적이 없는 경우에는 퍼미션 요청을 바로 합니다.
                 // 요청 결과는 onRequestPermissionResult에서 수신됩니다.
-                ActivityCompat.requestPermissions( this, REQUIRED_PERMISSIONS,
+                ActivityCompat.requestPermissions( getActivity(), REQUIRED_PERMISSIONS,
                         PERMISSIONS_REQUEST_CODE);
             }
 
@@ -311,9 +333,9 @@ public class google_map extends AppCompatActivity
             showDialogForLocationServiceSetting();
         }else {
 
-            int hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
+            int hasFineLocationPermission = ContextCompat.checkSelfPermission(getActivity(),
                     Manifest.permission.ACCESS_FINE_LOCATION);
-            int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
+            int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(),
                     Manifest.permission.ACCESS_COARSE_LOCATION);
 
 
@@ -335,7 +357,7 @@ public class google_map extends AppCompatActivity
     }
 
     @Override
-    protected void onStart() {
+    public void onStart() {
         super.onStart();
 
         // Log.d(TAG, "onStart");
@@ -357,7 +379,7 @@ public class google_map extends AppCompatActivity
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
 
         super.onStop();
 
@@ -375,7 +397,7 @@ public class google_map extends AppCompatActivity
     public String getCurrentAddress(LatLng latlng) {
 
         //지오코더... GPS를 주소로 변환
-        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        Geocoder geocoder = new Geocoder(getActivity(), Locale.getDefault());
 
         List<Address> addresses;
 
@@ -386,16 +408,16 @@ public class google_map extends AppCompatActivity
                     1);
         } catch (IOException ioException) {
             //네트워크 문제
-            Toast.makeText(this, "네트워크 사용불가", Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext, "네트워크 사용불가", Toast.LENGTH_LONG).show();
             return "네트워크 사용불가";
         } catch (IllegalArgumentException illegalArgumentException) {
-            Toast.makeText(this, "잘못된 GPS 좌표", Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext, "잘못된 GPS 좌표", Toast.LENGTH_LONG).show();
             return "잘못된 GPS 좌표";
 
         }
 
         if (addresses == null || addresses.size() == 0) {
-            Toast.makeText(this, "주소 미발견", Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), "주소 미발견", Toast.LENGTH_LONG).show();
             return "주소 미발견";
 
         } else {
@@ -405,7 +427,7 @@ public class google_map extends AppCompatActivity
     }
 
     public boolean checkLocationServicesStatus() {
-        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
@@ -463,9 +485,9 @@ public class google_map extends AppCompatActivity
     //여기부터는 런타임 퍼미션 처리을 위한 메소드들
     private boolean checkPermission() {
 
-        int hasFineLocationPermission = ContextCompat.checkSelfPermission(this,
+        int hasFineLocationPermission = ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION);
-        int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this,
+        int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_COARSE_LOCATION);
 
 
@@ -504,8 +526,8 @@ public class google_map extends AppCompatActivity
             else {
                 // 거부한 퍼미션이 있다면 앱을 사용할 수 없는 이유를 설명해주고 앱을 종료합니다.2 가지 경우가 있습니다.
 
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])
-                        || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[1])) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), REQUIRED_PERMISSIONS[0])
+                        || ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), REQUIRED_PERMISSIONS[1])) {
 
 
                     // 사용자가 거부만 선택한 경우에는 앱을 다시 실행하여 허용을 선택하면 앱을 사용할 수 있습니다.
@@ -514,8 +536,7 @@ public class google_map extends AppCompatActivity
 
                         @Override
                         public void onClick(View view) {
-
-                            finish();
+                            getFragmentManager().popBackStack();
                         }
                     }).show();
 
@@ -529,7 +550,7 @@ public class google_map extends AppCompatActivity
                         @Override
                         public void onClick(View view) {
 
-                            finish();
+                            getFragmentManager().popBackStack();
                         }
                     }).show();
                 }
@@ -542,7 +563,7 @@ public class google_map extends AppCompatActivity
     //여기부터는 GPS 활성화를 위한 메소드들
     private void showDialogForLocationServiceSetting() {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(google_map.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("위치 서비스 비활성화");
         builder.setMessage("앱을 사용하기 위해서는 위치 서비스가 필요합니다.\n"
                 + "위치 설정을 수정하실래요?");
@@ -566,7 +587,7 @@ public class google_map extends AppCompatActivity
 
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == GPS_ENABLE_REQUEST_CODE) {//사용자가 GPS 활성 시켰는지 검사
@@ -580,6 +601,8 @@ public class google_map extends AppCompatActivity
             }
         }
     }
+
+
 
     /*---------------------------------------------------------------------------------------------------*/
 
@@ -626,7 +649,7 @@ public class google_map extends AppCompatActivity
 
                 if(flag==1) {
                     if (speed > SHAKE_THRESHOLD) {
-                        tView.setText("Count : " + (++cnt));
+                        tView.setText((++cnt) + " 보");
                     }
                 }
 
@@ -645,23 +668,24 @@ public class google_map extends AppCompatActivity
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
-
-    public void mOnClick(View v) {
+    @Override
+    public void onClick(View v) {
         switch (v.getId()) {
             case R.id.start :
+
                 flag = 1;
                 break;
 
             case R.id.End :
-                /*cnt = 0;
-                tView.setText("" + cnt);*/
                 addData();
-                mContext = this;
-                Intent intent = new Intent(this, Array_View.class);
-                startActivity(intent);
+ //               Intent intent = new Intent(getActivity(), Frag3.class);
+//                Bundle bundle = new Bundle();
+//                intent.putExtras(bundle);
+//                startActivity(intent);
+
                 flag = 0;
                 cnt=0;
-                tView.setText("Count : " +  0);
+                tView.setText(0 + " 보");
                 break;
         }
         dbHelper.close();
@@ -671,7 +695,7 @@ public class google_map extends AppCompatActivity
         SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd --- HH시 mm분 ss초 ", Locale.getDefault());
         final String format_time1 = sfd.format(System.currentTimeMillis());
         final Map<String, Object> WalkCount = new HashMap<>();
-        WalkCount.put("Count", cnt);
+        WalkCount.put("Count", cnt + t1);
         WalkCount.put("day", format_time1);
 
         final FirebaseFirestore db = FirebaseFirestore.getInstance();

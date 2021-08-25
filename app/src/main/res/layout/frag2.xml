@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#272727"
+    tools:context=".Frag2">
+    <!--android:id="@+id/layout_main"-->
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_gravity="bottom"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp">
+
+        <Button
+            android:id="@+id/start"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:onClick="mOnClick"
+            android:text="산책 시작"
+            android:textSize="18dp"
+            android:textStyle="bold"
+            android:textColor="#000"
+            android:background="@drawable/button_background"
+            tools:ignore="OnClick" />
+
+        <Button
+            android:id="@+id/End"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:onClick="mOnClick"
+            android:textStyle="bold"
+            android:text="산책 끝"
+            android:textSize="18dp"
+            android:textColor="#000"
+            android:background="@drawable/button_background"
+            tools:ignore="OnClick" />
+
+        <TextView
+            android:id="@+id/walk"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="50dp"
+            android:text=" 보"
+            android:textStyle="bold"
+            android:textColor="#FFF"
+            android:textSize="30dp" />
+
+    </LinearLayout>
+    <fragment
+        android:id="@+id/google_map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+</LinearLayout>
